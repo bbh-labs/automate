@@ -1,4 +1,6 @@
 var app = require('app');
+var ipc = require('ipc');
+var dialog = require('dialog');
 var Menu = require('menu');
 var MenuItem = require('menu-item');
 var BrowserWindow = require('browser-window');
@@ -20,10 +22,10 @@ app.on('ready', function() {
 		mainWindow = null;
 	});
 
-	prepareMenu();
+	setupMenu();
 });
 
-function prepareMenu() {
+function setupMenu() {
 	var menuTemplate = [
 		{
 			label: 'File',
@@ -56,8 +58,37 @@ function prepareMenu() {
 		switch (item.label) {
 		case 'New':
 			item.click = function() {
-				console.log('test');
-			};
+				mainWindow.webContents.send('new');
+			}
+			break;
+		case 'Save':
+			item.click = function() {
+				dialog.showSaveDialog(null, {
+					filters: [
+						{ name: 'Custom File Type', extensions: [ 'atm' ] },
+					],
+				}, function(filename) {
+					mainWindow.webContents.send('save', filename);
+				});
+			}
+			break;
+		case 'Open':
+			item.click = function() {
+				dialog.showOpenDialog(null, {
+					filters: [
+						{ name: 'Custom File Type', extensions: [ 'atm' ] },
+					],
+				}, function(filenames) {
+					if (filenames && filenames.length > 0) {
+						mainWindow.webContents.send('open', filenames[0]);
+					}
+				});
+			}
+			break;
+		case 'Exit':
+			item.click = function() {
+				mainWindow.close();
+			}
 			break;
 		}
 	}
