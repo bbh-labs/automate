@@ -59,6 +59,8 @@
 	var globalShortcut = remote.require('global-shortcut');
 
 	var loop = 0;
+	var queueIndex = 0;
+	var queueTimer = -1;
 
 	var App = React.createClass({
 		displayName: 'App',
@@ -132,6 +134,13 @@
 			}).bind(this));
 			if (!ret) {
 				alert('Failed to set mouse shortcut: ctrl+shift+m!');
+			}
+
+			ret = globalShortcut.register('ctrl+shift+space', (function () {
+				this.refs.list.togglePlayback();
+			}).bind(this));
+			if (!ret) {
+				alert('Failed to set mouse shortcut: ctrl+shift+space!');
 			}
 
 			ipc.on('new', (function () {
@@ -304,6 +313,7 @@
 	App.List = React.createClass({
 		displayName: 'List',
 
+		queue: [],
 		styles: {
 			container: {
 				overflowY: 'scroll',
@@ -343,10 +353,6 @@
 							elem = React.createElement(App.List.KeyType, _extends({ text: 'Key Type' }, props));break;
 						case 'KeyPress':
 							elem = React.createElement(App.List.KeyPress, _extends({ text: 'Key Press' }, props));break;
-						/* TODO
-	     case 'Loop':
-	     	elem = <App.List.Loop text='Loop' {...props} />; break;
-	     */
 						case 'Empty':
 							elem = React.createElement(App.List.Empty, _extends({ text: 'Drag and drop action here' }, props));break;
 					}
@@ -372,7 +378,6 @@
 					case 'addMouseDrag':
 					case 'addKeyType':
 					case 'addKeyPress':
-						//TODO: case 'addLoop':
 						var type = payload.type.substring(3, payload.type.length);
 						actions.push({ type: type });
 						break;
@@ -382,7 +387,6 @@
 					case 'updateMouseDrag':
 					case 'updateKeyType':
 					case 'updateKeyPress':
-						//TODO: case 'updateLoop':
 						payload.type = payload.type.substring(6, payload.type.length);
 						actions[payload.actionID] = m(actions[payload.actionID], payload.action);
 						break;
@@ -392,7 +396,6 @@
 					case 'removeMouseDrag':
 					case 'removeKeyType':
 					case 'removeKeyPress':
-						//TODO: case 'removeLoop':
 						actions.splice(payload.actionID, 1);
 						break;
 					case 'setMousePosition':
@@ -411,51 +414,74 @@
 			if (!actions) {
 				actions = this.state.actions;
 			}
+
+			this.resetQueue();
+
 			var loops = this.state.loops;
 			for (var j = 0; j < loops; j++) {
 				for (var i in actions) {
 					var action = actions[i];
 					switch (action.type) {
 						case 'MouseClick':
-							robot.moveMouseSmooth(action.x, action.y);
-							robot.mouseClick();
+							this.addToQueue(robot.moveMouseSmooth, [action.x, action.y]);
+							this.addToQueue(robot.mouseClick);
 							break;
 						case 'MouseDoubleClick':
-							robot.moveMouseSmooth(action.x, action.y);
-							robot.mouseClick('left', true);
+							this.addToQueue(robot.moveMouseSmooth, [action.x, action.y]);
+							this.addToQueue(robot.mouseClick, ['left', true]);
 							break;
 						case 'MouseDrag':
-							robot.moveMouseSmooth(action.x1, action.y1);
-							robot.mouseToggle('down');
-							robot.moveMouseSmooth(action.x2, action.y2);
-							robot.mouseToggle('up');
+							this.addToQueue(robot.moveMouseSmooth, [action.x1, action.y1]);
+							this.addToQueue(robot.mouseToggle, ['down']);
+							this.addToQueue(robot.moveMouseSmooth, [action.x2, action.y2]);
+							this.addToQueue(robot.mouseToggle, ['up']);
 							break;
 						case 'KeyType':
 							loop = j;
 							if (action.isMath) {
-								robot.typeString('' + eval(action.text));
+								this.addToQueue(robot.typeString, ['' + eval(action.text)]);
 							} else {
-								robot.typeString(action.text);
+								this.addToQueue(robot.typeString, [action.text]);
 							}
 							break;
 						case 'KeyPress':
-							robot.keyToggle(action.key, 'down');
-							robot.keyToggle(action.key, 'up');
+							this.addToQueue(robot.keyToggle, [action.key, 'down']);
+							this.addToQueue(robot.keyToggle, [action.key, 'up']);
 							break;
-						/* TODO
-	     case 'Loop':
-	     	if (typeof(action.actions) != 'undefined') {
-	     		this.play(action.actions);
-	     	}
-	     	break;
-	     */
 					}
 				}
 			}
-			this.stop();
+
+			this.playQueue();
+		},
+		addToQueue: function addToQueue(fn, args) {
+			var o = { fn: fn, args: args };
+			this.queue.push(o);
+		},
+		resetQueue: function resetQueue() {
+			this.queue = [];
+			queueIndex = 0;
+		},
+		playQueue: function playQueue() {
+			var queue = this.queue;
+			if (queueIndex < this.queue.length) {
+				queueTimer = setTimeout((function () {
+					var q = queue[queueIndex++];
+					q.fn.apply(this, q.args);
+					this.playQueue();
+				}).bind(this), 100);
+			}
 		},
 		stop: function stop() {
+			clearTimeout(queueTimer);
 			this.setState({ playing: false });
+		},
+		togglePlayback: function togglePlayback() {
+			if (this.state.playing) {
+				this.stop();
+			} else {
+				this.play();
+			}
 		},
 		'new': function _new() {
 			this.setState({ playing: false, loops: 1, actions: [] });
@@ -535,7 +561,7 @@
 			}
 		},
 		render: function render() {
-			var containerProps = m({ style: this.styles.container }, this.props.text != 'Loop' && { onDragOver: this.handleDragOver, onDrop: this.handleDrop });
+			var containerProps = { style: this.styles.container, onDragOver: this.handleDragOver, onDrop: this.handleDrop };
 			var actionProps = { style: m(this.styles.action, this.props.actionStyle) };
 			var editing = this.props.editingActionID == this.props.actionID;
 			if (this.props.action) {
