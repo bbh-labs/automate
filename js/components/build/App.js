@@ -389,18 +389,23 @@ App.List = React.createClass({
 				var action = actions[i];
 				switch (action.type) {
 					case 'MouseClick':
-						this.addToQueue(robot.moveMouseSmooth, [action.x, action.y]);
-						this.addToQueue(robot.mouseClick);
+						this.addToQueue(robot.moveMouse, [action.x, action.y]);
+						this.addToQueue(robot.mouseToggle, ['down']);
+						this.addToQueue(this.idle);
+						this.addToQueue(robot.mouseToggle, ['up']);
+						this.addToQueue(this.idle);
 						break;
 					case 'MouseDoubleClick':
-						this.addToQueue(robot.moveMouseSmooth, [action.x, action.y]);
+						this.addToQueue(robot.moveMouse, [action.x, action.y]);
 						this.addToQueue(robot.mouseClick, ['left', true]);
+						this.addToQueue(this.idle);
 						break;
 					case 'MouseDrag':
 						this.addToQueue(robot.moveMouseSmooth, [action.x1, action.y1]);
 						this.addToQueue(robot.mouseToggle, ['down']);
 						this.addToQueue(robot.moveMouseSmooth, [action.x2, action.y2]);
 						this.addToQueue(robot.mouseToggle, ['up']);
+						this.addToQueue(this.idle);
 						break;
 					case 'KeyType':
 						loop = j;
@@ -409,10 +414,12 @@ App.List = React.createClass({
 						} else {
 							this.addToQueue(robot.typeString, [action.text]);
 						}
+						this.addToQueue(this.idle);
 						break;
 					case 'KeyPress':
 						this.addToQueue(robot.keyToggle, [action.key, 'down']);
 						this.addToQueue(robot.keyToggle, [action.key, 'up']);
+						this.addToQueue(this.idle);
 						break;
 				}
 			}
@@ -435,7 +442,7 @@ App.List = React.createClass({
 				var q = queue[queueIndex++];
 				q.fn.apply(this, q.args);
 				this.playQueue();
-			}).bind(this), 100);
+			}).bind(this), 50);
 		} else {
 			dispatcher.dispatch({ type: 'stop' });
 		}
@@ -453,13 +460,29 @@ App.List = React.createClass({
 	getJSON: function getJSON() {
 		return { loops: this.state.loops, actions: this.state.actions };
 	},
+	idle: function idle() {},
 	updateAction: function updateAction(editingActionID, action) {
 		if (typeof editingActionID != 'number') {
 			return;
 		}
 
 		var actions = this.state.actions;
-		actions[editingActionID] = m(actions[editingActionID], action);
+		var editAction = actions[editingActionID];
+		if (editAction.type == 'MouseDrag') {
+			var sameX = typeof editAction.x1 == 'number' && editAction.x1 == editAction.x2;
+			var sameY = typeof editAction.y1 == 'number' && editAction.y1 == editAction.y2;
+			if (sameX && sameY) {
+				editAction.x2 = action.x;
+				editAction.y2 = action.y;
+			} else {
+				editAction.x1 = action.x;
+				editAction.y1 = action.y;
+				editAction.x2 = action.x;
+				editAction.y2 = action.y;
+			}
+		} else {
+			actions[editingActionID] = m(editAction, action);
+		}
 		this.setState({ actions: actions });
 	},
 	handleChangeLoopCount: function handleChangeLoopCount(evt) {
