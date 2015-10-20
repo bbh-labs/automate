@@ -47,13 +47,18 @@ var App = React.createClass({
 		)
 	},
 	getInitialState: function() {
-		return { editingActionID: -1 };
+		return { playing: false, editingActionID: -1 };
 	},
 	componentDidMount: function() {
 		this.listenerID = dispatcher.register(function(payload) {
 			switch (payload.type) {
 			case 'play':
+				this.setState({ playing: true });
 				this.refs.list.play();
+				break;
+			case 'stop':
+				this.setState({ playing: false });
+				this.refs.list.stop();
 				break;
 			case 'listen':
 				this.setState({ editingActionID: payload.actionID });
@@ -79,7 +84,7 @@ var App = React.createClass({
 		}
 
 		ret = globalShortcut.register('ctrl+shift+space', function() {
-			this.refs.list.togglePlayback();
+			this.togglePlayback();
 		}.bind(this));
 		if (!ret) {
 			alert('Failed to set mouse shortcut: ctrl+shift+space!');
@@ -112,6 +117,15 @@ var App = React.createClass({
 	},
 	componentWillUnmount: function() {
 		dispatcher.unregister(this.listenerID);
+	},
+	togglePlayback: function() {
+		if (this.state.playing) {
+			this.setState({ playing: false });
+			this.refs.list.stop();
+		} else {
+			this.setState({ playing: true });
+			this.refs.list.play();
+		}
 	},
 });
 
@@ -147,7 +161,6 @@ App.Menu = React.createClass({
 			flex: '0 1',
 			flexDirection: 'row',
 			flexWrap: 'wrap',
-			justifyContent: 'center',
 		},
 	},
 	render: function() {
@@ -256,7 +269,6 @@ App.List = React.createClass({
 	},
 	getInitialState: function() {
 		return {
-			playing: false,
 			actions: [],
 			loops: 1,
 		};
@@ -331,7 +343,7 @@ App.List = React.createClass({
 					break;
 				case 'KeyType':
 					loop = j;
-					if (action.isMath) {
+					if (action.isScript) {
 						this.addToQueue(robot.typeString, [ '' + eval(action.text) ]);
 					} else {
 						this.addToQueue(robot.typeString, [ action.text ]);
@@ -363,18 +375,12 @@ App.List = React.createClass({
 				q.fn.apply(this, q.args);
 				this.playQueue();
 			}.bind(this), 100);
+		} else {
+			dispatcher.dispatch({ type: 'stop' });
 		}
 	},
 	stop: function() {
 		clearTimeout(queueTimer);
-		this.setState({ playing: false });
-	},
-	togglePlayback: function() {
-		if (this.state.playing) {
-			this.stop();
-		} else {
-			this.play();
-		}
 	},
 	new: function() {
 		this.setState({ playing: false, loops: 1, actions: [] });
@@ -555,6 +561,34 @@ App.List.TextProperty = React.createClass({
 	},
 });
 
+App.List.TextAreaProperty = React.createClass({
+	render: function() {
+		var inputProps = {
+			name: this.props.name,
+			value: this.props.action[this.props.name],
+			placeholder: 'Enter some text.',
+			rows: 4,
+			onChange: this.handleChange,
+			onFocus: this.handleFocus,
+			onBlur: this.handleBlur,
+		};
+		return <textarea { ...inputProps }></textarea>
+	},
+	handleChange: function(evt) {
+		var elem = evt.target;
+		var action = this.props.action;
+		var actionID = this.props.actionID;
+		action[elem.name] = elem.value;
+		dispatcher.dispatch({ type: 'update' + action.type, action: action, actionID: actionID });
+	},
+	handleFocus: function(evt) {
+		dispatcher.dispatch({ type: 'listen', actionID: this.props.actionID });
+	},
+	handleBlur: function(evt) {
+		dispatcher.dispatch({ type: 'unlisten', actionID: this.props.actionID });
+	},
+});
+
 App.List.CheckBoxProperty = React.createClass({
 	styles: {
 		label: { display: 'flex', flex: '0 0 50%' },
@@ -661,8 +695,8 @@ App.List.KeyType = React.createClass({
 		var containerProps = m(this.props, { actionStyle: { background: '#39c4ac' } });
 		return (
 			<App.List.Item { ...containerProps }>
-				<App.List.TextProperty name='text' { ...this.props } />
-				<App.List.CheckBoxProperty name='isMath' { ...this.props }>is math</App.List.CheckBoxProperty>
+				<App.List.TextAreaProperty name='text' { ...this.props } />
+				<App.List.CheckBoxProperty name='isScript' { ...this.props }>is script</App.List.CheckBoxProperty>
 			</App.List.Item>
 		)
 	},
@@ -727,7 +761,11 @@ App.Button = React.createClass({
 		)
 	},
 	handlePlay: function(evt) {
-		dispatcher.dispatch({ type: 'play' });
+		if (this.props.playing) {
+			dispatcher.dispatch({ type: 'stop' });
+		} else {
+			dispatcher.dispatch({ type: 'play' });
+		}
 	},
 });
 
