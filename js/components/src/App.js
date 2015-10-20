@@ -8,7 +8,6 @@ var fs = remote.require('fs');
 var robot = remote.require('robotjs');
 var globalShortcut = remote.require('global-shortcut');
 
-var loop = 0;
 var queueIndex = 0;
 var queueTimer = -1;
 
@@ -347,7 +346,7 @@ App.List = React.createClass({
 					this.addToQueue(this.idle);
 					break;
 				case 'KeyType':
-					loop = j;
+					var loop = j;
 					if (action.isScript) {
 						this.addToQueue(robot.typeString, [ '' + eval(action.text) ]);
 					} else {
