@@ -126,7 +126,7 @@
 				}
 			}).bind(this));
 
-			var ret = globalShortcut.register('ctrl+shift+m', (function () {
+			var ret = globalShortcut.register('ctrl+shift+s', (function () {
 				var editingActionID = this.state.editingActionID;
 				if (editingActionID >= 0) {
 					dispatcher.dispatch({
@@ -137,14 +137,14 @@
 				}
 			}).bind(this));
 			if (!ret) {
-				alert('Failed to set mouse shortcut: ctrl+shift+m!');
+				alert('Failed to set mouse shortcut: ctrl+shift+s!');
 			}
 
-			ret = globalShortcut.register('ctrl+shift+space', (function () {
+			ret = globalShortcut.register('ctrl+shift+enter', (function () {
 				this.togglePlayback();
 			}).bind(this));
 			if (!ret) {
-				alert('Failed to set mouse shortcut: ctrl+shift+space!');
+				alert('Failed to set mouse shortcut: ctrl+shift+enter!');
 			}
 
 			ipc.on('new', (function () {
