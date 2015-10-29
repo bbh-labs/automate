@@ -12,6 +12,22 @@ var queueIndex = 0;
 var queueTimer = -1;
 
 var App = React.createClass({
+	render: function() {
+		return (
+			<div style={this.styles.container}>
+				<div style={this.styles.innerContainer}>
+					<div style={this.styles.wrapper}>
+						<App.Banner />
+						<App.Menu />
+					</div>
+					<div style={this.styles.wrapper}>
+						<App.List { ...this.state } ref='list' />
+						<App.Button { ...this.state } />
+					</div>
+				</div>
+			</div>
+		)
+	},
 	styles: {
 		container: {
 			display: 'flex',
@@ -28,22 +44,6 @@ var App = React.createClass({
 			flex: '0 0 50%',
 			flexDirection: 'column',
 		},
-	},
-	render: function() {
-		return (
-			<div style={this.styles.container}>
-				<div style={this.styles.innerContainer}>
-					<div style={this.styles.wrapper}>
-						<App.Banner />
-						<App.Menu />
-					</div>
-					<div style={this.styles.wrapper}>
-						<App.List { ...this.state } ref='list' />
-						<App.Button { ...this.state } />
-					</div>
-				</div>
-			</div>
-		)
 	},
 	getInitialState: function() {
 		return { playing: false, editingActionID: -1 };
@@ -129,14 +129,6 @@ var App = React.createClass({
 });
 
 App.Banner = React.createClass({
-	styles: {
-		container: {
-			flex: '0 0 33.3333%',
-		},
-		title: {
-			fontFamily: 'Oswald',
-		},
-	},
 	render: function() {
 		return (
 			<div style={this.styles.container}>
@@ -145,9 +137,31 @@ App.Banner = React.createClass({
 			</div>
 		)
 	},
+	styles: {
+		container: {
+			flex: '0 0 33.3333%',
+		},
+		title: {
+			fontFamily: 'Oswald',
+		},
+	},
 });
 
 App.Menu = React.createClass({
+	render: function() {
+		return (
+			<div style={this.styles.container}>
+				<h3 className='text-center'>ACTIONS MENU</h3>
+				<div style={this.styles.buttonsContainer}>
+					<App.Menu.Button type='MouseClick' style={{ background: '#2e96df' }}>MOUSE CLICK</App.Menu.Button>
+					<App.Menu.Button type='KeyType' style={{ background: '#41c2ae' }}>KEY TYPE</App.Menu.Button>
+					<App.Menu.Button type='MouseDoubleClick' style={{ background: '#2e96df' }}>MOUSE DOUBLE CLICK</App.Menu.Button>
+					<App.Menu.Button type='KeyPress' style={{ background: '#41c2ae' }}>KEY PRESS</App.Menu.Button>
+					<App.Menu.Button type='MouseDrag' style={{ background: '#2e96df' }}>MOUSE DRAG</App.Menu.Button>
+				</div>
+			</div>
+		)
+	},
 	styles: {
 		container: {
 			display: 'flex',
@@ -162,39 +176,9 @@ App.Menu = React.createClass({
 			flexWrap: 'wrap',
 		},
 	},
-	render: function() {
-		return (
-			<div style={this.styles.container}>
-				<h3 className='text-center'>ACTIONS MENU</h3>
-				<div style={this.styles.buttonsContainer}>
-					<App.Menu.Button type='MouseClick' style={{ background: '#2e96df' }}>MOUSE CLICK</App.Menu.Button>
-					<App.Menu.Button type='KeyType' style={{ background: '#41c2ae' }}>KEY TYPE</App.Menu.Button>
-					<App.Menu.Button type='MouseDoubleClick' style={{ background: '#2e96df' }}>MOUSE DOUBLE CLICK</App.Menu.Button>
-					<App.Menu.Button type='KeyPress' style={{ background: '#41c2ae' }}>KEY PRESS</App.Menu.Button>
-					<App.Menu.Button type='MouseDrag' style={{ background: '#2e96df' }}>MOUSE DRAG</App.Menu.Button>
-					{/*<App.Menu.Button type='Loop' style={{ background: '#31475c' }}>LOOP</App.Menu.Button>*/}
-				</div>
-			</div>
-		)
-	},
 });
 
 App.Menu.Button = React.createClass({
-	styles: {
-		container: {
-			display: 'flex',
-			flex: '0 0 50%',
-			flexDirection: 'column',
-			justifyContent: 'center',
-		},
-		innerContainer: {
-			flex: '1 1',
-			margin: '0 8px',
-		},
-		shortcut: {
-			margin: 0,
-		},
-	},
 	render: function() {
 		var actionProps = {
 			draggable: 'true',
@@ -210,32 +194,37 @@ App.Menu.Button = React.createClass({
 			</div>
 		)
 	},
+	styles: {
+		container: {
+			display: 'flex',
+			flex: '0 0 50%',
+			flexDirection: 'column',
+			justifyContent: 'center',
+		},
+		innerContainer: {
+			flex: '1 1',
+			margin: '0 8px',
+		},
+		shortcut: {
+			margin: 0,
+		},
+	},
 	handleDragStart: function(evt) {
 		evt.dataTransfer.setData('text/plain', this.props.type);
 	},
 });
 
 App.List = React.createClass({
-	queue: [],
-	styles: {
-		container: {
-			overflowY: 'scroll',
-			background: 'white',
-			border: '1px solid #a0a0a0',
-			padding: '16px',
-		},
-	},
 	render: function() {
 		var editingActionID = this.props.editingActionID;
-		var inputProps = {
-			type: 'number',
-			placeholder: 'loops',
-			value: this.state.loops,
-			onChange: this.handleChangeLoopCount
-		};
+		var loopInputProps = { type: 'number', placeholder: 'loops', value: this.state.loops, onChange: this.handleChangeLoopCount };
+		var startLoopInputProps = { type: 'number', placeholder: 'start loop', value: this.state.startLoop, onChange: this.handleChangeStartLoop };
+		var startActionInputProps = { type: 'number', placeholder: 'start action', value: this.state.startAction, onChange: this.handleChangeStartAction };
 		return (
 			<div style={this.styles.container}>
-				<input {...inputProps} />
+				<input {...loopInputProps} />
+				<input {...startLoopInputProps} />
+				<input {...startActionInputProps} />
 			{
 				this.state.actions.map(function(action, i) {
 					var elem;
@@ -266,11 +255,17 @@ App.List = React.createClass({
 			</div>
 		)
 	},
+	queue: [],
+	styles: {
+		container: {
+			overflowY: 'scroll',
+			background: 'white',
+			border: '1px solid #a0a0a0',
+			padding: '16px',
+		},
+	},
 	getInitialState: function() {
-		return {
-			actions: [],
-			loops: 1,
-		};
+		return { actions: [], loops: 1, startLoop: 0, startAction: 0 };
 	},
 	componentDidMount: function() {
 		this.listenerID = dispatcher.register(function(payload) {
@@ -322,41 +317,76 @@ App.List = React.createClass({
 		this.resetQueue();
 
 		var loops = this.state.loops;
-		for (var j = 0; j < loops; j++) {
-			for (var i in actions) {
+		var startLoop = this.state.startLoop;
+
+		for (var j = startLoop; j < loops; j++) {
+			var startAction = (j == startLoop) ? this.state.startAction : 0;
+			for (var i = startAction; i < actions.length; i++) {
 				var action = actions[i];
+				var loop = j;
 				switch (action.type) {
 				case 'MouseClick':
-					this.addToQueue(robot.moveMouse, [ action.x, action.y ]);
+					var x, y;
+					if (action.isScript) {
+						x = eval(action.x);
+						y = eval(action.y);
+					} else {
+						x = action.x;
+						y = action.y;
+					}
+					console.log(action.x, action.y, x, y);
+					this.addToQueue(robot.moveMouse, [ x, y ]);
 					this.addToQueue(robot.mouseToggle, [ 'down' ]);
 					this.addToQueue(this.idle);
 					this.addToQueue(robot.mouseToggle, [ 'up' ]);
 					this.addToQueue(this.idle);
 					break;
 				case 'MouseDoubleClick':
-					this.addToQueue(robot.moveMouse, [ action.x, action.y ]);
+					var x, y;
+					if (action.isScript) {
+						x = eval(action.x);
+						y = eval(action.y);
+					} else {
+						x = action.x;
+						y = action.y;
+					}
+					this.addToQueue(robot.moveMouse, [ x, y ]);
 					this.addToQueue(robot.mouseClick, [ 'left', true ]);
 					this.addToQueue(this.idle);
 					break;
 				case 'MouseDrag':
-					this.addToQueue(robot.moveMouseSmooth, [ action.x1, action.y1 ]);
+					var x1, y1, x2, y2;
+					if (action.isScript) {
+						x1 = eval(action.x1);
+						y1 = eval(action.y1);
+						x2 = eval(action.x2);
+						y2 = eval(action.y2);
+					} else {
+						x1 = action.x1;
+						y1 = action.y1;
+						x2 = action.x2;
+						y2 = action.y2;
+					}
+					this.addToQueue(robot.moveMouseSmooth, [ x1, y1 ]);
 					this.addToQueue(robot.mouseToggle, [ 'down' ]);
-					this.addToQueue(robot.moveMouseSmooth, [ action.x2, action.y2 ]);
+					this.addToQueue(robot.moveMouseSmooth, [ x2, y2 ]);
 					this.addToQueue(robot.mouseToggle, [ 'up' ]);
 					this.addToQueue(this.idle);
 					break;
 				case 'KeyType':
-					var loop = j;
 					if (action.isScript) {
-						this.addToQueue(robot.typeString, [ '' + eval(action.text) ]);
+						this.addToQueue(robot.typeString, [ eval(action.text) ]);
 					} else {
 						this.addToQueue(robot.typeString, [ action.text ]);
 					}
 					this.addToQueue(this.idle);
 					break;
 				case 'KeyPress':
-					this.addToQueue(robot.keyToggle, [ action.key, 'down' ]);
-					this.addToQueue(robot.keyToggle, [ action.key, 'up' ]);
+					if (!(action.modifier == 'control' || action.modifier == 'alt' || action.modifier == 'shift')) {
+						break;
+					}
+					this.addToQueue(robot.keyToggle, [ action.key, 'down', action.modifier ]);
+					this.addToQueue(robot.keyToggle, [ action.key, 'up', action.modifier ]);
 					this.addToQueue(this.idle);
 					break;
 				}
@@ -408,8 +438,8 @@ App.List = React.createClass({
 		var actions = this.state.actions;
 		var editAction = actions[editingActionID];
 		if (editAction.type == 'MouseDrag') {
-			var sameX = (typeof(editAction.x1) == 'number' && editAction.x1 == editAction.x2);
-			var sameY = (typeof(editAction.y1) == 'number' && editAction.y1 == editAction.y2);
+			var sameX = editAction.x1 == editAction.x2;
+			var sameY = editAction.y1 == editAction.y2;
 			if (sameX && sameY) {
 				editAction.x2 = action.x;
 				editAction.y2 = action.y;
@@ -430,9 +460,41 @@ App.List = React.createClass({
 			this.setState({ loops: value });
 		}
 	},
+	handleChangeStartLoop: function(evt) {
+		var value = parseInt(evt.target.value);
+		if (value != NaN) {
+			this.setState({ startLoop: value });
+		}
+	},
+	handleChangeStartAction: function(evt) {
+		var value = parseInt(evt.target.value);
+		if (value != NaN) {
+			this.setState({ startAction: value });
+		}
+	},
 });
 
 App.List.Item = React.createClass({
+	render: function() {
+		var containerProps = { style: this.styles.container, onDragOver: this.handleDragOver, onDrop: this.handleDrop };
+		var actionProps = { style: m(this.styles.action, this.props.actionStyle) };
+		var editing = this.props.editingActionID == this.props.actionID;
+		if (this.props.action) {
+			return (
+				<div { ...containerProps }>
+					<h5 style={ this.styles.text }>Action { this.props.actionID + 1 }</h5>
+					<button { ...actionProps }>{ editing ? 'Editing..' : this.props.text }</button>
+					<div style={ this.styles.properties }>{ this.props.children }</div>
+					<button style={ this.styles.delete } onClick={ this.handleDelete }>DELETE</button>
+				</div>
+			)
+		}
+		return (
+			<div style={ this.styles.container }>
+				<h5 style={ this.styles.plus } onClick={ this.handleAddEmpty }>+</h5>
+			</div>
+		)
+	},
 	styles: {
 		container: {
 			display: 'flex',
@@ -480,26 +542,6 @@ App.List.Item = React.createClass({
 			color: 'white',
 		},
 	},
-	render: function() {
-		var containerProps = { style: this.styles.container, onDragOver: this.handleDragOver, onDrop: this.handleDrop };
-		var actionProps = { style: m(this.styles.action, this.props.actionStyle) };
-		var editing = this.props.editingActionID == this.props.actionID;
-		if (this.props.action) {
-			return (
-				<div { ...containerProps }>
-					<h5 style={ this.styles.text }>Action { this.props.actionID + 1 }</h5>
-					<button { ...actionProps }>{ editing ? 'Editing..' : this.props.text }</button>
-					<div style={ this.styles.properties }>{ this.props.children }</div>
-					<button style={ this.styles.delete } onClick={ this.handleDelete }>DELETE</button>
-				</div>
-			)
-		}
-		return (
-			<div style={ this.styles.container }>
-				<h5 style={ this.styles.plus } onClick={ this.handleAddEmpty }>+</h5>
-			</div>
-		)
-	},
 	handleDelete: function() {
 		dispatcher.dispatch({ type: 'remove' + this.props.action.type, actionID: this.props.actionID });
 	},
@@ -516,15 +558,10 @@ App.List.Item = React.createClass({
 });
 
 App.List.NumberProperty = React.createClass({
-	styles: {
-		label: { display: 'flex', flex: '0 0 50%' },
-		span: { flex: '1 1 50%' },
-		input: { flex: '1 1 50%' },
-	},
 	render: function() {
 		var inputProps = {
 			ref: 'input',
-			type: 'number',
+			type: 'text',
 			name: this.props.name,
 			value: this.props.action[this.props.name],
 			onChange: this.handleChange,
@@ -538,16 +575,16 @@ App.List.NumberProperty = React.createClass({
 			</label>
 		)
 	},
+	styles: {
+		label: { display: 'flex', flex: '0 0 50%' },
+		span: { flex: '1 1 50%' },
+		input: { flex: '1 1 50%' },
+	},
 	handleChange: function(evt) {
 		var elem = evt.target;
-		var value = parseInt(elem.value);
-		if (value == NaN) {
-			return;
-		}
-
 		var action = this.props.action;
 		var actionID = this.props.actionID;
-		action[elem.name] = value;
+		action[elem.name] = elem.value;
 		dispatcher.dispatch({ type: 'update' + action.type, action: action, actionID: actionID });
 	},
 	handleFocus: function(evt) {
@@ -562,7 +599,7 @@ App.List.TextProperty = React.createClass({
 			name: this.props.name,
 			type: 'text',
 			value: this.props.action[this.props.name],
-			placeholder: 'Enter some text.',
+			placeholder: this.props.placeholder ? this.props.placeholder : 'Enter some text.',
 			onChange: this.handleChange,
 			onFocus: this.handleFocus,
 			onBlur: this.handleBlur,
@@ -613,11 +650,6 @@ App.List.TextAreaProperty = React.createClass({
 });
 
 App.List.CheckBoxProperty = React.createClass({
-	styles: {
-		label: { display: 'flex', flex: '0 0 50%' },
-		span: { flex: '1 1 50%' },
-		input: { flex: '1 1 50%' },
-	},
 	render: function() {
 		var inputProps = {
 			name: this.props.name,
@@ -633,6 +665,11 @@ App.List.CheckBoxProperty = React.createClass({
 				<input { ...inputProps }/>
 			</label>
 		)
+	},
+	styles: {
+		label: { display: 'flex', flex: '0 0 50%' },
+		span: { flex: '1 1 50%' },
+		input: { flex: '1 1 50%' },
 	},
 	handleChange: function(evt) {
 		var elem = evt.target;
@@ -656,12 +693,13 @@ App.List.MouseClick = React.createClass({
 			<App.List.Item { ...containerProps }>
 				<App.List.NumberProperty name='x' { ...this.props }>mouse x </App.List.NumberProperty>
 				<App.List.NumberProperty name='y' { ...this.props }>mouse y </App.List.NumberProperty>
+				<App.List.CheckBoxProperty name='isScript' { ...this.props }>is script</App.List.CheckBoxProperty>
 			</App.List.Item>
 		)
 	},
 	isSet: function() {
 		var action = this.props.action;
-		return typeof(action.x) === 'number' && typeof(action.y) === 'number';
+		return action.x && action.y;
 	},
 });
 
@@ -672,19 +710,17 @@ App.List.MouseDoubleClick = React.createClass({
 			<App.List.Item { ...containerProps }>
 				<App.List.NumberProperty name='x' { ...this.props }>mouse x </App.List.NumberProperty>
 				<App.List.NumberProperty name='y' { ...this.props }>mouse y </App.List.NumberProperty>
+				<App.List.CheckBoxProperty name='isScript' { ...this.props }>is script</App.List.CheckBoxProperty>
 			</App.List.Item>
 		)
 	},
 	isSet: function() {
 		var action = this.props.action;
-		return typeof(action.x) === 'number' && typeof(action.y) === 'number';
+		return action.x && action.y;
 	},
 });
 
 App.List.MouseDrag = React.createClass({
-	styles: {
-		column: { display: 'flex', flex: '0 0 50%', flexDirection: 'column' },
-	},
 	render: function() {
 		var containerProps = m(this.props, { actionStyle: this.isSet() && { background: '#2d97de' } });
 		return (
@@ -697,23 +733,20 @@ App.List.MouseDrag = React.createClass({
 					<App.List.NumberProperty name='x2' { ...this.props }>mouse x </App.List.NumberProperty>
 					<App.List.NumberProperty name='y2' { ...this.props }>mouse y </App.List.NumberProperty>
 				</div>
+				<App.List.CheckBoxProperty name='isScript' { ...this.props }>is script</App.List.CheckBoxProperty>
 			</App.List.Item>
 		)
 	},
+	styles: {
+		column: { display: 'flex', flex: '0 0 50%', flexDirection: 'column' },
+	},
 	isSet: function() {
 		var action = this.props.action;
-		return typeof(action.x1) === 'number' && typeof(action.y1) === 'number' &&
-		       typeof(action.x2) === 'number' && typeof(action.y2) === 'number';
+		return action.x1 && action.y1 && action.x2 && action.y2;
 	},
 });
 
 App.List.KeyType = React.createClass({
-	styles: {
-		checkboxContainer: {
-			display: 'flex',
-			flex: '1 1',
-		},
-	},
 	render: function() {
 		var containerProps = m(this.props, { actionStyle: { background: '#39c4ac' } });
 		return (
@@ -723,24 +756,30 @@ App.List.KeyType = React.createClass({
 			</App.List.Item>
 		)
 	},
-});
-
-App.List.KeyPress = React.createClass({
 	styles: {
-		keyInput: {
+		checkboxContainer: {
 			display: 'flex',
 			flex: '1 1',
 		},
 	},
+});
+
+App.List.KeyPress = React.createClass({
 	render: function() {
 		var containerProps = m(this.props, { actionStyle: { background: '#39c4ac' } });
 		var keyInputProps = { type: 'text', maxLength: '1', placeholder: 'e.g. "A"', style: this.styles.keyInput };
 		return (
 			<App.List.Item { ...containerProps }>
-				<input { ...keyInputProps } required />
-				<App.List.NumberProperty name='loops' { ...this.props }>loops </App.List.NumberProperty>
+				<App.List.TextProperty name='key' { ...this.props } { ...keyInputProps } required />
+				<App.List.TextProperty name='modifier' { ...this.props } placeholder='modifier (e.g. control, alt, shift)' required />
 			</App.List.Item>
 		)
+	},
+	styles: {
+		keyInput: {
+			display: 'flex',
+			flex: '1 1',
+		},
 	},
 });
 
@@ -751,6 +790,19 @@ App.List.Empty = React.createClass({
 });
 
 App.Button = React.createClass({
+	render: function() {
+		var buttonProps = {
+			style: m(this.styles.button, this.props.playing && this.styles.playing),
+			onClick: this.handlePlay,
+		};
+		return (
+			<div style={ this.styles.container }>
+				<button { ...buttonProps }>
+					{ this.props.playing ? 'STOP' : 'PLAY' }
+				</button>
+			</div>
+		)
+	},
 	styles: {
 		container: {
 			flex: '1 0 20%',
@@ -770,19 +822,6 @@ App.Button = React.createClass({
 			background: '#ea4b35',
 		},
 	},
-	render: function() {
-		var buttonProps = {
-			style: m(this.styles.button, this.props.playing && this.styles.playing),
-			onClick: this.handlePlay,
-		};
-		return (
-			<div style={ this.styles.container }>
-				<button { ...buttonProps }>
-					{ this.props.playing ? 'STOP' : 'PLAY' }
-				</button>
-			</div>
-		)
-	},
 	handlePlay: function(evt) {
 		if (this.props.playing) {
 			dispatcher.dispatch({ type: 'stop' });
@@ -792,16 +831,48 @@ App.Button = React.createClass({
 	},
 });
 
-function m(a, b) {
-	if (!a) {
-		a = {};
-	}
+function m(a, b, c) {
+	a = a ? a : {};
+	b = b ? b : {};
+	c = c ? c : {};
+	var ab = update(a, { $merge: b });
+	return update(ab, { $merge: c });
+}
 
-	if (!b) {
-		return a;
+function calcLeft(loop, loops, numParts) {
+	var partLength = Math.floor(loops / numParts);
+	if (loop < partLength) {
+		return loop + partLength;
+	} else if (loop < partLength * 2) {
+		return loop - partLength;
+	} else if (loop < partLength * 3) {
+		return loop - partLength * 2;
 	}
+	return loop - partLength * 3;
+}
 
-	return update(a, { $merge: b });
+function calcCenter(loop, loops, numParts) {
+	var partLength = Math.floor(loops / numParts);
+	if (loop < partLength) {
+		return loop + partLength * 2;
+	} else if (loop < partLength * 2) {
+		return loop + partLength;
+	} else if (loop < partLength * 3) {
+		return loop - partLength;
+	}
+	return loop - partLength * 2;
+}
+
+function calcRight(loop, loops, numParts) {
+	var partLength = Math.floor(loops / numParts);
+	if (loop < partLength) {
+		return loop + partLength * 3;
+	} else if (loop < partLength * 2) {
+		return loop + partLength * 2;
+	} else if (loop < partLength * 3) {
+		return loop + partLength;
+	}
+	return loop - partLength;
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
