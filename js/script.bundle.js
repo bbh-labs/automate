@@ -442,7 +442,6 @@
 								x = action.x;
 								y = action.y;
 							}
-							console.log(action.x, action.y, x, y);
 							this.addToQueue(robot.moveMouse, [x, y]);
 							this.addToQueue(robot.mouseToggle, ['down']);
 							this.addToQueue(this.idle);
@@ -490,11 +489,13 @@
 							this.addToQueue(this.idle);
 							break;
 						case 'KeyPress':
-							if (!(action.modifier == 'control' || action.modifier == 'alt' || action.modifier == 'shift')) {
-								break;
+							if (action.modifier == 'control' || action.modifier == 'alt' || action.modifier == 'shift') {
+								this.addToQueue(robot.keyToggle, [action.key, 'down', action.modifier]);
+								this.addToQueue(robot.keyToggle, [action.key, 'up', action.modifier]);
+							} else {
+								this.addToQueue(robot.keyToggle, [action.key, 'down']);
+								this.addToQueue(robot.keyToggle, [action.key, 'up']);
 							}
-							this.addToQueue(robot.keyToggle, [action.key, 'down', action.modifier]);
-							this.addToQueue(robot.keyToggle, [action.key, 'up', action.modifier]);
 							this.addToQueue(this.idle);
 							break;
 					}
