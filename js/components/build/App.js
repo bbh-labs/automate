@@ -1,5 +1,3 @@
-'use strict';
-
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var React = require('react');
@@ -18,7 +16,7 @@ var queueTimer = -1;
 var App = React.createClass({
 	displayName: 'App',
 
-	render: function render() {
+	render: function () {
 		return React.createElement(
 			'div',
 			{ style: this.styles.container },
@@ -57,10 +55,10 @@ var App = React.createClass({
 			flexDirection: 'column'
 		}
 	},
-	getInitialState: function getInitialState() {
+	getInitialState: function () {
 		return { playing: false, editingActionID: -1 };
 	},
-	componentDidMount: function componentDidMount() {
+	componentDidMount: function () {
 		this.listenerID = dispatcher.register((function (payload) {
 			switch (payload.type) {
 				case 'play':
@@ -102,7 +100,7 @@ var App = React.createClass({
 		}
 
 		ipc.on('new', (function () {
-			this.refs.list['new']();
+			this.refs.list.new();
 		}).bind(this));
 
 		ipc.on('open', (function (filename) {
@@ -126,10 +124,10 @@ var App = React.createClass({
 			fs.writeFile(filename, data, 'utf8');
 		}).bind(this));
 	},
-	componentWillUnmount: function componentWillUnmount() {
+	componentWillUnmount: function () {
 		dispatcher.unregister(this.listenerID);
 	},
-	togglePlayback: function togglePlayback() {
+	togglePlayback: function () {
 		if (this.state.playing) {
 			this.setState({ playing: false });
 			this.refs.list.stop();
@@ -143,7 +141,7 @@ var App = React.createClass({
 App.Banner = React.createClass({
 	displayName: 'Banner',
 
-	render: function render() {
+	render: function () {
 		return React.createElement(
 			'div',
 			{ style: this.styles.container },
@@ -172,7 +170,7 @@ App.Banner = React.createClass({
 App.Menu = React.createClass({
 	displayName: 'Menu',
 
-	render: function render() {
+	render: function () {
 		return React.createElement(
 			'div',
 			{ style: this.styles.container },
@@ -231,7 +229,7 @@ App.Menu = React.createClass({
 App.Menu.Button = React.createClass({
 	displayName: 'Button',
 
-	render: function render() {
+	render: function () {
 		var actionProps = {
 			draggable: 'true',
 			style: this.props.style,
@@ -271,7 +269,7 @@ App.Menu.Button = React.createClass({
 			margin: 0
 		}
 	},
-	handleDragStart: function handleDragStart(evt) {
+	handleDragStart: function (evt) {
 		evt.dataTransfer.setData('text/plain', this.props.type);
 	}
 });
@@ -279,7 +277,7 @@ App.Menu.Button = React.createClass({
 App.List = React.createClass({
 	displayName: 'List',
 
-	render: function render() {
+	render: function () {
 		var editingActionID = this.props.editingActionID;
 		var loopInputProps = { type: 'number', placeholder: 'loops', value: this.state.loops, onChange: this.handleChangeLoopCount };
 		var startLoopInputProps = { type: 'number', placeholder: 'start loop', value: this.state.startLoop, onChange: this.handleChangeStartLoop };
@@ -326,10 +324,10 @@ App.List = React.createClass({
 			padding: '16px'
 		}
 	},
-	getInitialState: function getInitialState() {
+	getInitialState: function () {
 		return { actions: [], loops: 1, startLoop: 0, startAction: 0 };
 	},
-	componentDidMount: function componentDidMount() {
+	componentDidMount: function () {
 		this.listenerID = dispatcher.register((function (payload) {
 			var actions = this.state.actions;
 			switch (payload.type) {
@@ -368,10 +366,10 @@ App.List = React.createClass({
 			this.setState({ actions: actions });
 		}).bind(this));
 	},
-	componentWillUnmount: function componentWillUnmount() {
+	componentWillUnmount: function () {
 		dispatcher.unregister(this.listenerID);
 	},
-	play: function play(actions) {
+	play: function (actions) {
 		if (!actions) {
 			actions = this.state.actions;
 		}
@@ -458,15 +456,15 @@ App.List = React.createClass({
 
 		this.playQueue();
 	},
-	addToQueue: function addToQueue(fn, args) {
+	addToQueue: function (fn, args) {
 		var o = { fn: fn, args: args };
 		this.queue.push(o);
 	},
-	resetQueue: function resetQueue() {
+	resetQueue: function () {
 		this.queue = [];
 		queueIndex = 0;
 	},
-	playQueue: function playQueue() {
+	playQueue: function () {
 		var queue = this.queue;
 		if (queueIndex < this.queue.length) {
 			queueTimer = setTimeout((function () {
@@ -478,21 +476,21 @@ App.List = React.createClass({
 			dispatcher.dispatch({ type: 'stop' });
 		}
 	},
-	stop: function stop() {
+	stop: function () {
 		clearTimeout(queueTimer);
 	},
-	'new': function _new() {
+	new: function () {
 		this.setState({ playing: false, loops: 1, actions: [] });
 	},
-	loadJSON: function loadJSON(data) {
+	loadJSON: function (data) {
 		data = JSON.parse(data);
 		this.setState({ playing: false, loops: data.loops, actions: data.actions });
 	},
-	getJSON: function getJSON() {
+	getJSON: function () {
 		return { loops: this.state.loops, actions: this.state.actions };
 	},
-	idle: function idle() {},
-	updateAction: function updateAction(editingActionID, action) {
+	idle: function () {},
+	updateAction: function (editingActionID, action) {
 		if (typeof editingActionID != 'number') {
 			return;
 		}
@@ -516,19 +514,19 @@ App.List = React.createClass({
 		}
 		this.setState({ actions: actions });
 	},
-	handleChangeLoopCount: function handleChangeLoopCount(evt) {
+	handleChangeLoopCount: function (evt) {
 		var value = parseInt(evt.target.value);
 		if (value != NaN) {
 			this.setState({ loops: value });
 		}
 	},
-	handleChangeStartLoop: function handleChangeStartLoop(evt) {
+	handleChangeStartLoop: function (evt) {
 		var value = parseInt(evt.target.value);
 		if (value != NaN) {
 			this.setState({ startLoop: value });
 		}
 	},
-	handleChangeStartAction: function handleChangeStartAction(evt) {
+	handleChangeStartAction: function (evt) {
 		var value = parseInt(evt.target.value);
 		if (value != NaN) {
 			this.setState({ startAction: value });
@@ -539,7 +537,7 @@ App.List = React.createClass({
 App.List.Item = React.createClass({
 	displayName: 'Item',
 
-	render: function render() {
+	render: function () {
 		var containerProps = { style: this.styles.container, onDragOver: this.handleDragOver, onDrop: this.handleDrop };
 		var actionProps = { style: m(this.styles.action, this.props.actionStyle) };
 		var editing = this.props.editingActionID == this.props.actionID;
@@ -565,7 +563,7 @@ App.List.Item = React.createClass({
 				),
 				React.createElement(
 					'button',
-					{ style: this.styles['delete'], onClick: this.handleDelete },
+					{ style: this.styles.delete, onClick: this.handleDelete },
 					'DELETE'
 				)
 			);
@@ -617,7 +615,7 @@ App.List.Item = React.createClass({
 			color: 'grey',
 			cursor: 'pointer'
 		},
-		'delete': {
+		delete: {
 			display: 'block',
 			background: '#ea4b35',
 			border: 'none',
@@ -627,17 +625,17 @@ App.List.Item = React.createClass({
 			color: 'white'
 		}
 	},
-	handleDelete: function handleDelete() {
+	handleDelete: function () {
 		dispatcher.dispatch({ type: 'remove' + this.props.action.type, actionID: this.props.actionID });
 	},
-	handleDragOver: function handleDragOver(evt) {
+	handleDragOver: function (evt) {
 		evt.preventDefault();
 	},
-	handleDrop: function handleDrop(evt) {
+	handleDrop: function (evt) {
 		var type = evt.dataTransfer.getData('text/plain');
 		dispatcher.dispatch({ actionID: this.props.actionID, type: 'update' + type, action: { type: type } });
 	},
-	handleAddEmpty: function handleAddEmpty() {
+	handleAddEmpty: function () {
 		dispatcher.dispatch({ type: 'addEmpty' });
 	}
 });
@@ -645,7 +643,7 @@ App.List.Item = React.createClass({
 App.List.NumberProperty = React.createClass({
 	displayName: 'NumberProperty',
 
-	render: function render() {
+	render: function () {
 		var inputProps = {
 			ref: 'input',
 			type: 'text',
@@ -671,14 +669,14 @@ App.List.NumberProperty = React.createClass({
 		span: { flex: '1 1 50%' },
 		input: { flex: '1 1 50%' }
 	},
-	handleChange: function handleChange(evt) {
+	handleChange: function (evt) {
 		var elem = evt.target;
 		var action = this.props.action;
 		var actionID = this.props.actionID;
 		action[elem.name] = elem.value;
 		dispatcher.dispatch({ type: 'update' + action.type, action: action, actionID: actionID });
 	},
-	handleFocus: function handleFocus(evt) {
+	handleFocus: function (evt) {
 		dispatcher.dispatch({ type: 'unlisten', actionID: this.props.actionID });
 		dispatcher.dispatch({ type: 'listen', actionID: this.props.actionID });
 	}
@@ -687,7 +685,7 @@ App.List.NumberProperty = React.createClass({
 App.List.TextProperty = React.createClass({
 	displayName: 'TextProperty',
 
-	render: function render() {
+	render: function () {
 		var inputProps = {
 			name: this.props.name,
 			type: 'text',
@@ -699,17 +697,17 @@ App.List.TextProperty = React.createClass({
 		};
 		return React.createElement('input', inputProps);
 	},
-	handleChange: function handleChange(evt) {
+	handleChange: function (evt) {
 		var elem = evt.target;
 		var action = this.props.action;
 		var actionID = this.props.actionID;
 		action[elem.name] = elem.value;
 		dispatcher.dispatch({ type: 'update' + action.type, action: action, actionID: actionID });
 	},
-	handleFocus: function handleFocus(evt) {
+	handleFocus: function (evt) {
 		dispatcher.dispatch({ type: 'listen', actionID: this.props.actionID });
 	},
-	handleBlur: function handleBlur(evt) {
+	handleBlur: function (evt) {
 		dispatcher.dispatch({ type: 'unlisten', actionID: this.props.actionID });
 	}
 });
@@ -717,7 +715,7 @@ App.List.TextProperty = React.createClass({
 App.List.TextAreaProperty = React.createClass({
 	displayName: 'TextAreaProperty',
 
-	render: function render() {
+	render: function () {
 		var inputProps = {
 			name: this.props.name,
 			value: this.props.action[this.props.name],
@@ -729,17 +727,17 @@ App.List.TextAreaProperty = React.createClass({
 		};
 		return React.createElement('textarea', inputProps);
 	},
-	handleChange: function handleChange(evt) {
+	handleChange: function (evt) {
 		var elem = evt.target;
 		var action = this.props.action;
 		var actionID = this.props.actionID;
 		action[elem.name] = elem.value;
 		dispatcher.dispatch({ type: 'update' + action.type, action: action, actionID: actionID });
 	},
-	handleFocus: function handleFocus(evt) {
+	handleFocus: function (evt) {
 		dispatcher.dispatch({ type: 'listen', actionID: this.props.actionID });
 	},
-	handleBlur: function handleBlur(evt) {
+	handleBlur: function (evt) {
 		dispatcher.dispatch({ type: 'unlisten', actionID: this.props.actionID });
 	}
 });
@@ -747,7 +745,7 @@ App.List.TextAreaProperty = React.createClass({
 App.List.CheckBoxProperty = React.createClass({
 	displayName: 'CheckBoxProperty',
 
-	render: function render() {
+	render: function () {
 		var inputProps = {
 			name: this.props.name,
 			type: 'checkbox',
@@ -772,17 +770,17 @@ App.List.CheckBoxProperty = React.createClass({
 		span: { flex: '1 1 50%' },
 		input: { flex: '1 1 50%' }
 	},
-	handleChange: function handleChange(evt) {
+	handleChange: function (evt) {
 		var elem = evt.target;
 		var action = this.props.action;
 		var actionID = this.props.actionID;
 		action[elem.name] = elem.checked;
 		dispatcher.dispatch({ type: 'update' + action.type, action: action, actionID: actionID });
 	},
-	handleFocus: function handleFocus(evt) {
+	handleFocus: function (evt) {
 		dispatcher.dispatch({ type: 'listen', actionID: this.props.actionID });
 	},
-	handleBlur: function handleBlur(evt) {
+	handleBlur: function (evt) {
 		dispatcher.dispatch({ type: 'unlisten', actionID: this.props.actionID });
 	}
 });
@@ -790,7 +788,7 @@ App.List.CheckBoxProperty = React.createClass({
 App.List.MouseClick = React.createClass({
 	displayName: 'MouseClick',
 
-	render: function render() {
+	render: function () {
 		var containerProps = m(this.props, { actionStyle: this.isSet() && { background: '#2d97de' } });
 		return React.createElement(
 			App.List.Item,
@@ -812,7 +810,7 @@ App.List.MouseClick = React.createClass({
 			)
 		);
 	},
-	isSet: function isSet() {
+	isSet: function () {
 		var action = this.props.action;
 		return action.x && action.y;
 	}
@@ -821,7 +819,7 @@ App.List.MouseClick = React.createClass({
 App.List.MouseDoubleClick = React.createClass({
 	displayName: 'MouseDoubleClick',
 
-	render: function render() {
+	render: function () {
 		var containerProps = m(this.props, { actionStyle: this.isSet() && { background: '#2d97de' } });
 		return React.createElement(
 			App.List.Item,
@@ -843,7 +841,7 @@ App.List.MouseDoubleClick = React.createClass({
 			)
 		);
 	},
-	isSet: function isSet() {
+	isSet: function () {
 		var action = this.props.action;
 		return action.x && action.y;
 	}
@@ -852,7 +850,7 @@ App.List.MouseDoubleClick = React.createClass({
 App.List.MouseDrag = React.createClass({
 	displayName: 'MouseDrag',
 
-	render: function render() {
+	render: function () {
 		var containerProps = m(this.props, { actionStyle: this.isSet() && { background: '#2d97de' } });
 		return React.createElement(
 			App.List.Item,
@@ -895,7 +893,7 @@ App.List.MouseDrag = React.createClass({
 	styles: {
 		column: { display: 'flex', flex: '0 0 50%', flexDirection: 'column' }
 	},
-	isSet: function isSet() {
+	isSet: function () {
 		var action = this.props.action;
 		return action.x1 && action.y1 && action.x2 && action.y2;
 	}
@@ -904,7 +902,7 @@ App.List.MouseDrag = React.createClass({
 App.List.KeyType = React.createClass({
 	displayName: 'KeyType',
 
-	render: function render() {
+	render: function () {
 		var containerProps = m(this.props, { actionStyle: { background: '#39c4ac' } });
 		return React.createElement(
 			App.List.Item,
@@ -928,7 +926,7 @@ App.List.KeyType = React.createClass({
 App.List.KeyPress = React.createClass({
 	displayName: 'KeyPress',
 
-	render: function render() {
+	render: function () {
 		var containerProps = m(this.props, { actionStyle: { background: '#39c4ac' } });
 		var keyInputProps = { type: 'text', maxLength: '1', placeholder: 'e.g. "A"', style: this.styles.keyInput };
 		return React.createElement(
@@ -949,7 +947,7 @@ App.List.KeyPress = React.createClass({
 App.List.Empty = React.createClass({
 	displayName: 'Empty',
 
-	render: function render() {
+	render: function () {
 		return React.createElement(App.List.Item, this.props);
 	}
 });
@@ -957,7 +955,7 @@ App.List.Empty = React.createClass({
 App.Button = React.createClass({
 	displayName: 'Button',
 
-	render: function render() {
+	render: function () {
 		var buttonProps = {
 			style: m(this.styles.button, this.props.playing && this.styles.playing),
 			onClick: this.handlePlay
@@ -991,7 +989,7 @@ App.Button = React.createClass({
 			background: '#ea4b35'
 		}
 	},
-	handlePlay: function handlePlay(evt) {
+	handlePlay: function (evt) {
 		if (this.props.playing) {
 			dispatcher.dispatch({ type: 'stop' });
 		} else {

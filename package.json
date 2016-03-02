@@ -11,6 +11,7 @@
     "robotjs": "^0.3.1"
   },
   "devDependencies": {
+    "babel-preset-react": "^6.5.0",
     "electron-prebuilt": "^0.34.0",
     "electron-rebuild": "^1.0.2"
   }
